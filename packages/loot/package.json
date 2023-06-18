@@ -9,6 +9,6 @@
     "character"
   ],
   "dependencies": {
-    "promise-mysql": "^3.2.1"
+    "promise-mysql": "^5.2.0"
   }
 }

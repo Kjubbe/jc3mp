@@ -1,19 +1,24 @@
+[Credits](https://github.com/Paradigm-MP/SI-Script-Pack)
+
 # How to set up the server
-These steps will guide you in getting the server up and running. If you just try to run it right now, it won't work. You should be well versed in running a JC3MP server and installing packages before continuing. If you do not know how to do these things, please check out the links below:
-- [How to create a JC3MP server](https://steamcommunity.com/sharedfiles/filedetails/?id=1094953641)
-- [Slightly outdated, but still relevant video guide on setting up a server](https://www.youtube.com/watch?v=ZYX_ixGmrqA&t=0s&index=5&list=PLuIwpfh4OKaX3rzC2S1E7kcS9rU-592VP)
-- [Video guide on how to install packages](https://www.youtube.com/watch?v=bFEyHj8UxII&t=0s&index=4&list=PLuIwpfh4OKaX3rzC2S1E7kcS9rU-592VP)
 
-
-## Essential Steps
 These steps are essential to getting the server up and running.
 
 1. Copy all packages from `packages` to your own packages directory.
 
-2. Run `npm i` in the following packages:
+2. Install node and npm as root - [source](https://www.digitalocean.com/community/tutorials/how-to-install-node-js-on-ubuntu-22-04)
+
+   Steps:
+
+   - `cd ~`
+   - `curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh`
+   - `./nodesource_setup.sh`
+   - `sudo apt install -y nodejs`
+
+3. Run `npm i` in the following packages. Use `install.sh` with chmod +777 in serverfiles directory.
+
 - backup
 - character
-- discord-bot
 - friends
 - inventory
 - itemuse
@@ -22,23 +27,51 @@ These steps are essential to getting the server up and running.
 - vehicles
 - watchlist
 
-4. Upload all the files within `resources` to some host IP or website. You should be able to access them by going to `my_host_ip/resources/...`.
+4. Run the server within `resources`. Use `tmux` for a separate session. CTRL + B then D to detach. `tmux attach` to reattach. CTRL + C to stop server. [source](<https://opensource.com/article/20/7/tmux-cheat-sheet#:~:text=Start%20tmux&text=Press%20Ctrl%2BB%20followed%20by%201%20to%20go%20to%20the,or%20P%20(for%20Previous).>)
 
-5. Change all references to `MY RESOURCE PATH` to your own host IP or website.
+5. Install MySQL
 
-6. Inside `resource/client_package/package.json`, add your resource path (where you hosted the resources) to the `"websites"` section so that your resources can be whitelisted.
+   Install MySQL as root [source](https://www.cloudbooklet.com/how-to-install-mysql-on-debian-11/)
 
-7. Change all channel, server, and role ids in the `discord-bot` package to your own.
-8. Survival Island packages use MySQL as their database of choice. You'll need to install MySQL and (highly recommended) MySQL Workbench.
+   - `sudo apt update`
+   - `sudo apt upgrade`
+   - `sudo apt install wget`
+   - `wget https://dev.mysql.com/get/mysql-apt-config_0.8.22-1_all.deb` will download the package
+   - `sudo apt install ./mysql-apt-config_0.8.22-1_all.deb` will install the repository
+   - `sudo apt update`
+   - `sudo apt install mysql-server`
 
-    1. Install MySQL on your Windows computer. We use version `5.17.18`, but you can use another close version, like `5.7.24`. Download it from [here](https://dev.mysql.com/downloads/installer/) under "Looking for previous GA versions?". Make sure to install the MySQL Workbench as well, because that allows you to remotely manage the database. Make sure to write down your database name, username, and password.
-    2. Install MySQL on your server's environment. We're going to assume that you are using a Linux environment for this. You can follow [this](https://support.rackspace.com/how-to/installing-mysql-server-on-ubuntu/) guide for setting it up. Make sure to create a user with the same credentials as you did in step 1 so that you can connect to your database.
+     - Do not choose the default authentication method. Choose legacy encryption.
 
-9.  Take your database name, username, and password from step 8 and insert it into `packages/character/config.js`. This will allow various packages on the server to connect to the database so they can store and retrieve information.
-10. Add yourself as an Admin by adding an entry into `packages/character/events/tags.js`. You can see a few example nametags there as well. Feel free to add whatever kinds of nametags you want there. Only players with the tags `Admin` or `Mod` receive special privileges.
+   - `sudo service mysql status` will check the status of the server
 
-## Optional Steps
-1. Change all loading tips within `packages/load/client_package/ui/script.js` to your own tips, including Steam groups and Discord servers.
-2. Change the URL inside of `packages/discord-integration/client_package/main.js` on line 18 to your own Discord invite link. This will make your own server pop up when you press F4.
-3. Change the `BETA` text at the bottom of the screen to something else by changing the text in `packages/events-status/client_package/ui/index.html`.
-4. Change all the text and graphics that point to Survival Island in the `load` package and `character` package to your own title and graphics.
+   - `INSERT INTO mysql.user (User,Host,authentication_string,ssl_cipher,x509_issuer,x509_subject) VALUES('{DB_PASSWORD}','localhost','will_be_replaced_the_next_line','','','');`
+   - Since `PASSWORD()` does not work: use `SET PASSWORD FOR '{DB_USER}'@'localhost' = '{DB_PASSWORD}';` after creating user. [source](https://dev.mysql.com/doc/refman/8.0/en/set-password.html)
+
+   - `mysql -u root -p`, `mysql -u {DB_USER} -p` and enter your password.
+   - `ALTER USER 'root'@'localhost' IDENTIFIED BY 'new_password';` [source](https://stackoverflow.com/questions/50093144/mysql-8-0-client-does-not-support-authentication-protocol-requested-by-server)
+
+6. Take your database name, username, and password from step 8 and insert it into `packages/character/config.js`. This will allow various packages on the server to connect to the database so they can store and retrieve information.
+
+7. Add yourself as an Admin by adding an entry into `packages/character/events/tags.js`. You can see a few example nametags there as well. Feel free to add whatever kinds of nametags you want there. Only players with the tags `Admin` or `Mod` receive special privileges.
+
+## Troubleshooting
+
+- `ER_NOT_SUPPORTED_AUTH_MODE` - MySQL server
+
+  - This error occurs when you are using a newer version of MySQL server than the one that is supported by the MySQL client. To fix this, you can either downgrade your MySQL server or upgrade your MySQL client.
+  - Make sure to use MySQL Version 8 with legacy encryption.
+  - `ALTER USER '{DB_USER}'@'localhost' IDENTIFIED WITH mysql_native_password BY '{DB_PASSWORD}'` [source](https://stackoverflow.com/questions/44946270/er-not-supported-auth-mode-mysql-server)
+
+- MYSQL is weird
+
+  - `FLUSH PRIVILEGES;`
+
+- Unexpected token
+
+  - Node version is too low. Update to `16.x`
+
+- Other
+  - `rm -rf node_modules`
+  - `su -`
+  - `apt-get remove --purge "mysql-.\*"`

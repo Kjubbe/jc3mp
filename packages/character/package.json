@@ -2,12 +2,11 @@
     "author": "Paradigm",
     "name": "character",
     "version": "1.0.0",
-    "dependencies": 
-    {
-        "promise-mysql": "^3.0.1"
+    "dependencies": {
+        "promise-mysql": "^5.2.0",
+        "randomcolor": "^0.6.2"
     },
-    "jcmp_dependencies": 
-    [
+    "jcmp_dependencies": [
         "chat2",
         "resource",
         "load"

@@ -1,5 +1,6 @@
 # Credits
 
+- **Original Authors**: [PARADIGM TEAM](https://github.com/Paradigm-MP)
 - **Font Awesome**: [Font Awesome](https://fontawesome.com/)
 - **discord-integration** package: [UnknownMiscreant](https://discord.gg/gcyBvkE)
 - **JC3MP**: [nanos](https://nanos.io/)
